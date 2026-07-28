@@ -9,33 +9,48 @@
 > **复制下面整个代码块，粘贴给你的 WorkBuddy AI Agent，即可完成全自动安装。**
 
 ````text
-请从 GitHub 安装 science-reference-check_diy 技能，并自动处理所有依赖。
+请从 GitHub 安装 science-reference-check_diy 技能及其所有依赖。
 
-操作步骤：
-1. 从 GitHub 克隆技能到本地：
-   git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/science-reference-check_diy
-   cp -r /tmp/science-reference-check_diy ~/.workbuddy/skills/
+# ====== 步骤 1：安装技能本体 ======
+git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/skill
+cp -r /tmp/skill ~/.workbuddy/skills/science-reference-check_diy
 
-2. 安装依赖技能（每次执行一条）：
-   @marketplace-skill-installer 安装 pubmed-search
-   @marketplace-skill-installer 安装 literature-search
-   @marketplace-skill-installer 安装 patents-search
-   @marketplace-skill-installer 安装 docx
+# ====== 步骤 2：安装依赖技能 ======
+# pubmed-search（来源：SkillHub，公开可用）
+curl -L -o /tmp/pubmed.zip "https://lightmake.site/api/v1/download?slug=pubmed-search"
+mkdir -p ~/.workbuddy/skills/pubmed-search
+unzip -o /tmp/pubmed.zip -d ~/.workbuddy/skills/pubmed-search
 
-3. 安装 Python 依赖：
-   pip install python-docx requests
+# literature-search（来源：SkillHub，公开可用）
+curl -L -o /tmp/lit.zip "https://lightmake.site/api/v1/download?slug=literature-search"
+mkdir -p ~/.workbuddy/skills/literature-search
+unzip -o /tmp/lit.zip -d ~/.workbuddy/skills/literature-search
 
-4. 配置 Valyu API Key（用于 PubMed 搜索，免费额度 $10）：
-   获取 Key → https://platform.valyu.ai
-   bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <你的Key>
-   bash ~/.workbuddy/skills/lc-literature-search/scripts/search setup <你的Key>
+# ====== 步骤 3：Python 依赖 ======
+pip install python-docx requests
 
-5. 验证安装：
-   bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search "test" 1
-   python3 -c "import docx; print('OK')"
+# ====== 步骤 4：配置 Valyu API Key ======
+# 获取免费 Key（$10 额度）：https://platform.valyu.ai
+# 将 <YOUR_KEY> 替换为实际 Key
+bash ~/.workbuddy/skills/pubmed-search/scripts/search setup <YOUR_KEY>
+bash ~/.workbuddy/skills/literature-search/scripts/search setup <YOUR_KEY>
 
-全部完成后回复"安装完成"，并列出已安装的技能列表。
+# ====== 步骤 5：验证安装 ======
+echo "=== 技能文件 ===" && ls ~/.workbuddy/skills/science-reference-check_diy/SKILL.md && echo "OK"
+echo "=== PubMed API ===" && bash ~/.workbuddy/skills/pubmed-search/scripts/search "test" 1 && echo "OK"
+echo "=== Python deps ===" && python3 -c "import docx,requests; print('OK')"
+echo "=== 安装完成 ==="
+
+# 确认所有技能已就绪后回复「安装完成」。
 ````
+
+> **依赖来源说明**：
+> | 依赖 | 来源 | 地址 |
+> |------|------|------|
+> | pubmed-search | SkillHub | `lightmake.site/api/v1/download?slug=pubmed-search` |
+> | literature-search | SkillHub | `lightmake.site/api/v1/download?slug=literature-search` |
+> | patents-search | ⚠️ 不可公开下载 | 不影响核心功能，专利验证自动使用 WebSearch 替代 |
+> | docx | 内置 | WorkBuddy 自带的 marketplace 技能 |
 
 > **GitHub 仓库**：https://github.com/ZhangGZ-medical/science-reference-check_diy
 
@@ -101,22 +116,25 @@
 
 ```
 # 步骤 1：克隆技能本体
-git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/science-reference-check_diy
-cp -r /tmp/science-reference-check_diy ~/.workbuddy/skills/
+git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/skill
+cp -r /tmp/skill ~/.workbuddy/skills/science-reference-check_diy
 
-# 步骤 2：安装依赖技能（在 WorkBuddy 对话中逐条执行）
-@marketplace-skill-installer 安装 pubmed-search
-@marketplace-skill-installer 安装 literature-search
-@marketplace-skill-installer 安装 patents-search
-@marketplace-skill-installer 安装 docx
+# 步骤 2：安装依赖技能（从 SkillHub 下载）
+# --- pubmed-search ---
+curl -L -o /tmp/pubmed.zip "https://lightmake.site/api/v1/download?slug=pubmed-search"
+mkdir -p ~/.workbuddy/skills/pubmed-search && unzip -o /tmp/pubmed.zip -d ~/.workbuddy/skills/pubmed-search
+
+# --- literature-search ---
+curl -L -o /tmp/lit.zip "https://lightmake.site/api/v1/download?slug=literature-search"
+mkdir -p ~/.workbuddy/skills/literature-search && unzip -o /tmp/lit.zip -d ~/.workbuddy/skills/literature-search
 
 # 步骤 3：安装 Python 依赖
 pip install python-docx requests
 
 # 步骤 4：配置 Valyu API Key
 # 获取免费 Key（$10 额度）：https://platform.valyu.ai
-bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <YOUR_VALYU_API_KEY>
-bash ~/.workbuddy/skills/lc-literature-search/scripts/search setup <YOUR_VALYU_API_KEY>
+bash ~/.workbuddy/skills/pubmed-search/scripts/search setup <YOUR_KEY>
+bash ~/.workbuddy/skills/literature-search/scripts/search setup <YOUR_KEY>
 ```
 
 **方式二：通过 marketplace-skill-installer（已安装本技能后更新依赖）**
@@ -157,12 +175,12 @@ bash ~/.workbuddy/skills/lc-literature-search/scripts/search setup YOUR_VALYU_AP
 
 ### 依赖技能明细
 
-| 技能名 | 安装路径 | 用途 | 强制 |
-|--------|---------|------|------|
-| `pubmed-search` | `~/.workbuddy/skills/lc-pubmed-search/` | PubMed 文献检索验证 | ✅ 是 |
-| `literature-search` | `~/.workbuddy/skills/lc-literature-search/` | 跨库文献检索（arXiv/bioRxiv/medRxiv） | ✅ 是 |
-| `patents-search` | `~/.workbuddy/skills/lc-patents-search/` | 专利数据库检索 | ⚠️ 按需（含专利引文时） |
-| `docx` | `~/.workbuddy/plugins/.../docx/` | DOCX 格式报告输出（python-docx） | ✅ 是 |
+| 技能名 | 安装路径 | 来源 | 用途 | 强制 |
+|--------|---------|------|------|------|
+| `pubmed-search` | `~/.workbuddy/skills/pubmed-search/` | [SkillHub](https://lightmake.site/api/v1/download?slug=pubmed-search) | PubMed 文献检索验证 | ✅ 是 |
+| `literature-search` | `~/.workbuddy/skills/literature-search/` | [SkillHub](https://lightmake.site/api/v1/download?slug=literature-search) | 跨库文献检索（arXiv/bioRxiv/medRxiv） | ✅ 是 |
+| `patents-search` | `~/.workbuddy/skills/patents-search/` | ⚠️ 无可公开下载地址 | 专利数据库检索 | ❌ 否（自动用 WebSearch 替代） |
+| `docx` | 内置 marketplace | WorkBuddy 自带 | DOCX 格式报告输出 | ✅ 是 |
 
 ### 配置验证
 
@@ -174,14 +192,13 @@ echo "=== 技能文件检查 ==="
 for f in \
   ~/.workbuddy/skills/science-reference-check_diy/SKILL.md \
   ~/.workbuddy/skills/science-reference-check_diy/README.md \
-  ~/.workbuddy/skills/lc-pubmed-search/scripts/search \
-  ~/.workbuddy/skills/lc-literature-search/scripts/search \
-  ~/.workbuddy/skills/lc-patents-search/SKILL.md; do
-  [ -f "$f" ] && echo "  ✅ $(basename $(dirname $f))/$(basename $f)" || echo "  ❌ 缺失: $f"
+  ~/.workbuddy/skills/pubmed-search/scripts/search \
+  ~/.workbuddy/skills/literature-search/scripts/search; do
+  [ -f "$f" ] && echo "  ✅ $f" || echo "  ❌ 缺失: $f"
 done
 
 # 2. 验证 PubMed API 连通性
-bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search "test query" 1 && \
+bash ~/.workbuddy/skills/pubmed-search/scripts/search "test query" 1 && \
   echo "  ✅ Valyu API 连通" || \
   echo "  ❌ API 不通，请检查 Key 配置"
 
@@ -195,11 +212,10 @@ echo "=== 验证完成 ==="
 期望输出：
 ```
 === 技能文件检查 ===
-  ✅ science-reference-check_diy/SKILL.md
-  ✅ science-reference-check_diy/README.md
-  ✅ lc-pubmed-search/search
-  ✅ lc-literature-search/search
-  ✅ lc-patents-search/SKILL.md
+  ✅ ~/.workbuddy/skills/science-reference-check_diy/SKILL.md
+  ✅ ~/.workbuddy/skills/science-reference-check_diy/README.md
+  ✅ ~/.workbuddy/skills/pubmed-search/scripts/search
+  ✅ ~/.workbuddy/skills/literature-search/scripts/search
   ✅ Valyu API 连通
   ✅ python-docx 可用
 === 验证完成 ===
