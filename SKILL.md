@@ -7,30 +7,31 @@ created: 2026-07-28
 install:
   dependencies:
     - name: pubmed-search
-      path: ~/.workbuddy/skills/lc-pubmed-search/
-      install_cmd: "@marketplace-skill-installer 安装 pubmed-search"
+      path: ~/.workbuddy/skills/pubmed-search/
+      download: "curl -L -o /tmp/pubmed.zip 'https://lightmake.site/api/v1/download?slug=pubmed-search' && mkdir -p ~/.workbuddy/skills/pubmed-search && unzip -o /tmp/pubmed.zip -d ~/.workbuddy/skills/pubmed-search"
       required: true
     - name: literature-search
-      path: ~/.workbuddy/skills/lc-literature-search/
-      install_cmd: "@marketplace-skill-installer 安装 literature-search"
+      path: ~/.workbuddy/skills/literature-search/
+      download: "curl -L -o /tmp/lit.zip 'https://lightmake.site/api/v1/download?slug=literature-search' && mkdir -p ~/.workbuddy/skills/literature-search && unzip -o /tmp/lit.zip -d ~/.workbuddy/skills/literature-search"
       required: true
     - name: patents-search
-      path: ~/.workbuddy/skills/lc-patents-search/
-      install_cmd: "@marketplace-skill-installer 安装 patents-search"
+      path: ~/.workbuddy/skills/patents-search/
+      download: null
       required: false
+      fallback: "WebSearch 自动替代专利验证"
     - name: docx
-      path: ~/.workbuddy/plugins/.../docx/
-      install_cmd: "@marketplace-skill-installer 安装 docx"
+      path: builtin
+      download: null
       required: true
   api_keys:
     - name: Valyu API Key
       url: https://platform.valyu.ai
-      setup_cmd: "bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <KEY>"
+      setup_cmd: "bash ~/.workbuddy/skills/pubmed-search/scripts/search setup <KEY>"
   verify_cmds:
-    - "ls ~/.workbuddy/skills/lc-pubmed-search/scripts/search"
-    - "ls ~/.workbuddy/skills/lc-literature-search/scripts/search"
+    - "ls ~/.workbuddy/skills/pubmed-search/scripts/search || ls ~/.workbuddy/skills/lc-pubmed-search/scripts/search"
+    - "ls ~/.workbuddy/skills/literature-search/scripts/search || ls ~/.workbuddy/skills/lc-literature-search/scripts/search"
     - "python3 -c 'import docx; print(\"OK\")'"
-    - "bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search \"test\" 1"
+    - "bash ~/.workbuddy/skills/pubmed-search/scripts/search \"test\" 1 || bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search \"test\" 1"
 ---
 
 # science-reference-check_diy v1.0 — 科学引文批量验证
@@ -56,25 +57,35 @@ install:
 技能被调用后，第一件事是检查依赖是否就绪：
 
 ```bash
-# 快速自检脚本
+# 快速自检脚本（兼容 lc- 和标准命名）
 echo "=== science-reference-check_diy 依赖检查 ==="
 DEPS_OK=true
 
-# 检查 PubMed 搜索脚本
-if [ -f ~/.workbuddy/skills/lc-pubmed-search/scripts/search ]; then
-  echo "✅ pubmed-search 已安装"
+# 检查 PubMed 搜索脚本（优先标准路径，兼容 lc- 前缀）
+if [ -f ~/.workbuddy/skills/pubmed-search/scripts/search ]; then
+  PUBMED_PATH=~/.workbuddy/skills/pubmed-search
+elif [ -f ~/.workbuddy/skills/lc-pubmed-search/scripts/search ]; then
+  PUBMED_PATH=~/.workbuddy/skills/lc-pubmed-search
 else
-  echo "❌ pubmed-search 缺失 → 执行: @marketplace-skill-installer 安装 pubmed-search"
+  echo "❌ pubmed-search 缺失"
+  echo "   安装：curl -L -o /tmp/pubmed.zip 'https://lightmake.site/api/v1/download?slug=pubmed-search'"
+  echo "        mkdir -p ~/.workbuddy/skills/pubmed-search && unzip -o /tmp/pubmed.zip -d ~/.workbuddy/skills/pubmed-search"
   DEPS_OK=false
 fi
+[ -n "$PUBMED_PATH" ] && echo "✅ pubmed-search 已安装 ($PUBMED_PATH)"
 
 # 检查文献搜索脚本
-if [ -f ~/.workbuddy/skills/lc-literature-search/scripts/search ]; then
-  echo "✅ literature-search 已安装"
+if [ -f ~/.workbuddy/skills/literature-search/scripts/search ]; then
+  LIT_PATH=~/.workbuddy/skills/literature-search
+elif [ -f ~/.workbuddy/skills/lc-literature-search/scripts/search ]; then
+  LIT_PATH=~/.workbuddy/skills/lc-literature-search
 else
-  echo "❌ literature-search 缺失 → 执行: @marketplace-skill-installer 安装 literature-search"
+  echo "❌ literature-search 缺失"
+  echo "   安装：curl -L -o /tmp/lit.zip 'https://lightmake.site/api/v1/download?slug=literature-search'"
+  echo "        mkdir -p ~/.workbuddy/skills/literature-search && unzip -o /tmp/lit.zip -d ~/.workbuddy/skills/literature-search"
   DEPS_OK=false
 fi
+[ -n "$LIT_PATH" ] && echo "✅ literature-search 已安装 ($LIT_PATH)"
 
 # 检查 python-docx
 if python3 -c "import docx" 2>/dev/null; then
@@ -85,11 +96,11 @@ else
 fi
 
 # 检查 Valyu API Key
-if bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search "test" 1 >/dev/null 2>&1; then
+if bash "$PUBMED_PATH/scripts/search" "test" 1 >/dev/null 2>&1; then
   echo "✅ Valyu API 连通"
 else
   echo "⚠️ Valyu API 未配置 → 获取 Key: https://platform.valyu.ai"
-  echo "   配置: bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <KEY>"
+  echo "   配置: bash $PUBMED_PATH/scripts/search setup <KEY>"
 fi
 
 if [ "$DEPS_OK" = false ]; then
@@ -107,12 +118,12 @@ echo "=== 检查完成 ==="
 
 ### 依赖技能列表
 
-| 技能 | 用途 | 安装路径 |
-|------|------|---------|
-| `pubmed-search` | PubMed 文献检索 | `~/.workbuddy/skills/lc-pubmed-search/` |
-| `literature-search` | 跨库文献检索（PubMed+arXiv+bioRxiv+medRxiv） | `~/.workbuddy/skills/lc-literature-search/` |
-| `patents-search` | 专利数据库检索 | `~/.workbuddy/skills/lc-patents-search/` |
-| `docx` | DOCX 格式输出 | `~/.workbuddy/plugins/.../docx/` |
+| 技能 | 用途 | 安装路径 | 公开下载 |
+|------|------|---------|---------|
+| `pubmed-search` | PubMed 文献检索 | `~/.workbuddy/skills/pubmed-search/` | [SkillHub](https://lightmake.site/api/v1/download?slug=pubmed-search) |
+| `literature-search` | 跨库文献检索（PubMed+arXiv+bioRxiv+medRxiv） | `~/.workbuddy/skills/literature-search/` | [SkillHub](https://lightmake.site/api/v1/download?slug=literature-search) |
+| `patents-search` | 专利数据库检索（可选，缺失时自动用 WebSearch 替代） | `~/.workbuddy/skills/patents-search/` | ⚠️ 不可公开下载 |
+| `docx` | DOCX 格式输出 | 内置 marketplace | WorkBuddy 自带 |
 
 **API Key**：Valyu API Key（已记录在全局 `~/.workbuddy/MEMORY.md`）。
 
@@ -145,7 +156,7 @@ echo "=== 检查完成 ==="
 对每组启动一个 Agent（`subagent_type: general-purpose`，`run_in_background: true`）。
 
 每个 Agent 的任务：
-1. 对期刊论文：运行 `bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search "标题关键词" 5`
+1. 对期刊论文：运行 `bash ~/.workbuddy/skills/pubmed-search/scripts/search "标题关键词" 5`（如含 lc- 前缀则使用 lc-pubmed-search 路径）
 2. 对专利/临床试验/预印本：使用 `WebSearch`
 3. 比对返回结果与引用内容
 4. 输出每条的状态和差异说明
