@@ -4,17 +4,55 @@
 
 ---
 
+## ⚡ 给 AI Agent 的一键安装指令
+
+> **复制下面整个代码块，粘贴给你的 WorkBuddy AI Agent，即可完成全自动安装。**
+
+````text
+请从 GitHub 安装 science-reference-check_diy 技能，并自动处理所有依赖。
+
+操作步骤：
+1. 从 GitHub 克隆技能到本地：
+   git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/science-reference-check_diy
+   cp -r /tmp/science-reference-check_diy ~/.workbuddy/skills/
+
+2. 安装依赖技能（每次执行一条）：
+   @marketplace-skill-installer 安装 pubmed-search
+   @marketplace-skill-installer 安装 literature-search
+   @marketplace-skill-installer 安装 patents-search
+   @marketplace-skill-installer 安装 docx
+
+3. 安装 Python 依赖：
+   pip install python-docx requests
+
+4. 配置 Valyu API Key（用于 PubMed 搜索，免费额度 $10）：
+   获取 Key → https://platform.valyu.ai
+   bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <你的Key>
+   bash ~/.workbuddy/skills/lc-literature-search/scripts/search setup <你的Key>
+
+5. 验证安装：
+   bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search "test" 1
+   python3 -c "import docx; print('OK')"
+
+全部完成后回复"安装完成"，并列出已安装的技能列表。
+````
+
+> **GitHub 仓库**：https://github.com/ZhangGZ-medical/science-reference-check_diy
+
+---
+
 ## 目录
 
-1. [功能概述](#功能概述)
-2. [安装与配置](#安装与配置)
-3. [使用方法](#使用方法)
-4. [输入输出说明](#输入输出说明)
-5. [验证能力矩阵](#验证能力矩阵)
-6. [适用场景](#适用场景)
-7. [架构设计](#架构设计)
-8. [扩展指南](#扩展指南)
-9. [FAQ](#faq)
+1. [给 AI Agent 的一键安装指令](#-给-ai-agent-的一键安装指令)
+2. [功能概述](#功能概述)
+3. [安装与配置](#安装与配置)
+4. [使用方法](#使用方法)
+5. [输入输出说明](#输入输出说明)
+6. [验证能力矩阵](#验证能力矩阵)
+7. [适用场景](#适用场景)
+8. [架构设计](#架构设计)
+9. [扩展指南](#扩展指南)
+10. [FAQ](#faq)
 
 ---
 
@@ -57,7 +95,31 @@
 > 以下命令集将完成技能本体安装 + 全部依赖技能安装 + API Key 配置。
 > 在 WorkBuddy 中向 AI 助手发送以下任意一条指令即可自动执行：
 
-**方式一：通过 marketplace-skill-installer（推荐）**
+**方式一：从 GitHub 一键安装（推荐，适用于裸机 Agent）**
+
+> 这是给尚未安装任何技能的 AI Agent 的完整安装指令
+
+```
+# 步骤 1：克隆技能本体
+git clone https://github.com/ZhangGZ-medical/science-reference-check_diy.git /tmp/science-reference-check_diy
+cp -r /tmp/science-reference-check_diy ~/.workbuddy/skills/
+
+# 步骤 2：安装依赖技能（在 WorkBuddy 对话中逐条执行）
+@marketplace-skill-installer 安装 pubmed-search
+@marketplace-skill-installer 安装 literature-search
+@marketplace-skill-installer 安装 patents-search
+@marketplace-skill-installer 安装 docx
+
+# 步骤 3：安装 Python 依赖
+pip install python-docx requests
+
+# 步骤 4：配置 Valyu API Key
+# 获取免费 Key（$10 额度）：https://platform.valyu.ai
+bash ~/.workbuddy/skills/lc-pubmed-search/scripts/search setup <YOUR_VALYU_API_KEY>
+bash ~/.workbuddy/skills/lc-literature-search/scripts/search setup <YOUR_VALYU_API_KEY>
+```
+
+**方式二：通过 marketplace-skill-installer（已安装本技能后更新依赖）**
 
 ```
 @marketplace-skill-installer 安装 science-reference-check_diy 及其全部依赖
